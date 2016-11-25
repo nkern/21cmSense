@@ -7,7 +7,7 @@ import optparse, sys
 
 o = optparse.OptionParser()
 o.set_usage('mk_array_file.py -C [calfile]')
-a.scripting.add_standard_options(o,cal=True)
+#a.scripting.add_standard_options(o,cal=True)
 o.add_option('--track', dest='track', default=None, type=float,
     help="If set, calculate sensitivity for a tracked observation of this duration in hours; otherwise, calculate for a drift scan.")
 o.add_option('--bl_min', dest='bl_min', default=0., type=float,

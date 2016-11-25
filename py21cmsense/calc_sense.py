@@ -10,7 +10,6 @@ import aipy as a
 import numpy as np
 import optparse
 from scipy import interpolate
-#import click
 
 __all__ = ['Calc_Sense']
 
@@ -111,7 +110,6 @@ class Calc_Sense(PS_Funcs):
         These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
     """
 
-    # Wrap with click decorators
     def __init__(self, model='mod', buff=0.1, freq=0.135, eor='',
                 ndays=180.0, n_per_day=6.0, bwidth=0.008, nchan=82, no_ns=False):
         """ initialize class """
@@ -198,7 +196,7 @@ class Calc_Sense(PS_Funcs):
                 i, j = bl.split(',')
                 i, j = int(i), int(j)
                 u,v,w = aa.gen_uvw(i,j,src=obs_zen)
-                _beam = beamgridder(xcen=u/dish_size_in_lambda,ycen=v/dish_size_in_lambda,size=dim)
+                _beam = self.beamgridder(xcen=u/dish_size_in_lambda,ycen=v/dish_size_in_lambda,size=dim)
                 uvplane += nbls*_beam
                 uvsum += nbls*_beam
             quadsum += (uvplane)**2
