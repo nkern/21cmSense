@@ -55,7 +55,7 @@ class PS_Funcs:
         return idx
     
     # Gridding Function
-    def beamgridder(xcen,ycen,size):
+    def beamgridder(self,xcen,ycen,size):
         crds = np.mgrid[0:size,0:size]
         cen = size/2 - 0.5 # correction for centering
         xcen += cen
