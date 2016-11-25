@@ -4,7 +4,9 @@ py21cmsense is a Python module for calculating the sensitivity of a radio interf
 For more information, please see
 
 Parsons et al. 2012ApJ...753...81P
+
 Pober et al. 2013AJ....145...65P
+
 Pober et al. 2014ApJ...782...66P
 
 The code repository can be found at https://github.com/jpober/21cmSense
