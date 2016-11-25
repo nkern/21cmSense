@@ -16,3 +16,14 @@ If you use this code in any of your work, please acknowledge
 Pober et al. 2013AJ....145...65P and Pober et al. 2014ApJ...782...66P 
 and provide a link to the code repository.
 
+INSTALLATION:
+
+Simple installation is to add the directory where py21cmsense lives to your PYTHONPATH.
+In your .bash_profile or .bashrc file, add
+```bash
+#!/bin/bash 
+cd <working_directory>
+PYTHONPATH=<working_directory>:$PYTHONPATH
+export PYTHONPATH
+```
+
