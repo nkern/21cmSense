@@ -71,10 +71,48 @@ class PS_Funcs:
 class Calc_Sense(PS_Funcs):
     """
     Interferometer Sensitivity Calculator
+
+    model : string, choose from ['opt','mod','pess'] (default='mod')
+        Foreground model can be optimistic (all modes k modes inside the primary field of view are excluded)
+        moderate (all k modes inside horizon + buffer are excluded, but all baselines within a uv pixel are added coherently)
+        pessimistic (all k modes inside horizon + buffer are excluded, and all baselines are added incoherently)
+
+    buff : float (default=0.1)
+        The size of the additive buffer outside the horizon to exclude in the pessimistic and moderate models.
+
+    freq : float (default=0.135)
+        The center frequency of the observation in GHz. If you change from the default, be sure to use
+        a sensible power spectrum model from that redshift.  Note that many values in the code are calculated
+        relative to .150 GHz and are not affected by changing this value.
+
+    eor : string (default='')
+        The model epoch of reionization power spectrum.  The code is built to handle output power spectra from 21cmFAST.
+
+    ndays : float (default=180.0)
+        The total number of days observed. The default is 180, which is the maximum a particular R.A. can be observed
+        in one year if one only observes at night. The total observing time is ndays*n_per_day.
+
+    n_per_day : float (default=6.0)
+        The number of good observing hours per day. This corresponds to the size of a low-foreground region in right ascension
+        for a drift scanning instrument.  The total observing time is ndays*n_per_day.  Default is 6.
+        If simulating a tracked scan, n_per_day should be a multiple of the length of the track
+        (i.e. for two three-hour tracks per day, n_per_day should be 6).
+
+    bwidth : float (default=0.008)
+        Cosmological bandwidth in GHz.  Note this is not the total instrument bandwidth, but the redshift range that can be
+        considered co-eval.
+
+    nchan : int (default=82)
+        Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
+        100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
+
+    no_ps : bool (default=False)
+        Remove pure north/south baselines (u=0) from the sensitivity calculation. 
+        These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
     """
 
     # Wrap with click decorators
-    def __init__(self, model='mod', buff=0.1, freq=0.135, eor='ps_no_halos_nf0.521457_z9.50_useTs0_zetaX-1.0e+00_200_400Mpc_v2',
+    def __init__(self, model='mod', buff=0.1, freq=0.135, eor='',
                 ndays=180.0, n_per_day=6.0, bwidth=0.008, nchan=82, no_ns=False):
         """ initialize class """
         self.model = model
