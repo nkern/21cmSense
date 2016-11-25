@@ -12,7 +12,7 @@ import optparse
 from scipy import interpolate
 #import click
 
-__all__ = ['Calc_Sense','Calc_tSense_2D']
+__all__ = ['Calc_Sense']
 
 class PS_Funcs:
     """
