@@ -10,7 +10,6 @@ from __future__ import division
 import os
 import sys
 import aipy as a
-import capo as C
 import numpy as np
 import optparse
 from scipy import interpolate
