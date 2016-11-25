@@ -346,14 +346,14 @@ class Calc_Sense(PS_Funcs):
         A = p21(kmag)
         M = p21(kmag)
         wA, wM = A * (1./sense1d), M * (1./sense1d)
-        wA, wM = n.matrix(wA).T, n.matrix(wM).T
+        wA, wM = np.matrix(wA).T, np.matrix(wM).T
         amp = (wA.T*wA).I * (wA.T * wM)
         #errorbars
-        Y = n.float(amp) * wA
+        Y = np.float(amp) * wA
         dY = wM - Y
         s2 = (len(wM)-1)**-1 * (dY.T * dY)
-        X = n.matrix(wA).T * n.matrix(wA)
-        err = n.sqrt((1./n.float(X)))
+        X = np.matrix(wA).T * np.matrix(wA)
+        err = np.sqrt((1./np.float(X)))
         print 'total snr = ', amp/err
 
 
