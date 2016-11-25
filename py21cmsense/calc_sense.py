@@ -123,9 +123,18 @@ class Calc_Sense(PS_Funcs):
         self.nchan = nchan
         self.no_ns = no_ns
 
-    def make_arrayfile(self, cal_filename, track=None, bl_min=0.0, bl_max=None, verbose=False):
+    def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None, bl_min=0.0, bl_max=None, verbose=False):
         """
         Make an array file given a calibration file
+
+        cal_filename : string
+            aipy Python calibration file location & name without '.py' suffix
+
+        outdir : string (default='./')
+            arrayfile output directory with '/' suffix
+
+        out_fname : string (default=None)
+            arrayfile output filename
         """
         #load cal file and read array parameters
         aa = a.cal.get_aa(cal_filename, np.array([.150]))
