@@ -205,7 +205,7 @@ class Calc_Sense(PS_Funcs):
 
         if verbose == True: print "Saving file as %s_blmin%0.f_blmax%0.f_arrayfile.npz" % (name, bl_len_min, bl_len_max)
 
-        n.savez('%s_blmin%0.f_blmax%0.f_arrayfile.npz' % (name, bl_len_min, bl_len_max),
+        np.savez('%s_blmin%0.f_blmax%0.f_arrayfile.npz' % (name, bl_len_min, bl_len_max),
             uv_coverage = uvsum,
             uv_coverage_pess = quadsum,
             name = name,
