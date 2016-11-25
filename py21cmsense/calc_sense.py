@@ -2,11 +2,15 @@
 calc_sense.py
 
 Repackaging of original calc_sense.py and calc_tsense_2D.py scripts into a class structure
+
+Nicholas Kern
+2016
 """
 from __future__ import division
 import os
 import sys
 import aipy as a
+import capo as C
 import numpy as np
 import optparse
 from scipy import interpolate
@@ -70,60 +74,9 @@ class PS_Funcs:
 class Calc_Sense(PS_Funcs):
     """
     Interferometer Sensitivity Calculator
-
-    model : string, choose from ['opt','mod','pess'] (default='mod')
-        Foreground model can be optimistic (all modes k modes inside the primary field of view are excluded)
-        moderate (all k modes inside horizon + buffer are excluded, but all baselines within a uv pixel are added coherently)
-        pessimistic (all k modes inside horizon + buffer are excluded, and all baselines are added incoherently)
-
-    buff : float (default=0.1)
-        The size of the additive buffer outside the horizon to exclude in the pessimistic and moderate models.
-
-    freq : float (default=0.135)
-        The center frequency of the observation in GHz. If you change from the default, be sure to use
-        a sensible power spectrum model from that redshift.  Note that many values in the code are calculated
-        relative to .150 GHz and are not affected by changing this value.
-
-    eor : string (default='')
-        The model epoch of reionization power spectrum.  The code is built to handle output power spectra from 21cmFAST.
-
-    ndays : float (default=180.0)
-        The total number of days observed. The default is 180, which is the maximum a particular R.A. can be observed
-        in one year if one only observes at night. The total observing time is ndays*n_per_day.
-
-    n_per_day : float (default=6.0)
-        The number of good observing hours per day. This corresponds to the size of a low-foreground region in right ascension
-        for a drift scanning instrument.  The total observing time is ndays*n_per_day.  Default is 6.
-        If simulating a tracked scan, n_per_day should be a multiple of the length of the track
-        (i.e. for two three-hour tracks per day, n_per_day should be 6).
-
-    bwidth : float (default=0.008)
-        Cosmological bandwidth in GHz.  Note this is not the total instrument bandwidth, but the redshift range that can be
-        considered co-eval.
-
-    nchan : int (default=82)
-        Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
-        100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
-
-    no_ps : bool (default=False)
-        Remove pure north/south baselines (u=0) from the sensitivity calculation. 
-        These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
     """
 
-    def __init__(self, model='mod', buff=0.1, freq=0.135, eor='',
-                ndays=180.0, n_per_day=6.0, bwidth=0.008, nchan=82, no_ns=False):
-        """ initialize class """
-        self.model = model
-        self.buff = buff
-        self.freq = freq
-        self.eor = eor
-        self.ndays = ndays
-        self.n_per_day = n_per_day
-        self.bwidth = bwidth
-        self.nchan = nchan
-        self.no_ns = no_ns
-
-    def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None, bl_min=0.0, bl_max=None, verbose=False):
+    def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None, bl_min=0.0, bl_max=None, verbose=False, **kwargs):
         """
         Make an array file given a calibration file
 
@@ -134,7 +87,7 @@ class Calc_Sense(PS_Funcs):
             arrayfile output directory with '/' suffix
 
         out_fname : string (default=None)
-            arrayfile output filename
+            arrayfile output filename prefix (out_fname.npz)
         """
         #load cal file and read array parameters
         aa = a.cal.get_aa(cal_filename, np.array([.150]))
@@ -227,9 +180,55 @@ class Calc_Sense(PS_Funcs):
             Trx = prms['Trx'],
             t_int = t_int)
 
-    def calc_sense_1D(self, array_filename, outdir='./', out_fname=None):
+    def calc_sense_1D(self, array_filename, outdir='./', out_fname=None,
+                        model='mod', buff=0.1, freq=0.135, eor='', ndays=180.0, n_per_day=6.0,
+                        bwidth=0.008, nchan=82, no_ns=False, **kwargs):
         """
         Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
+
+        outdir : string (default='./')
+            output directory
+
+        out_fname : string (default=None)
+            output filename (out_fname.npz)
+
+        model : string, choose from ['opt','mod','pess'] (default='mod')
+            Foreground model can be optimistic (all modes k modes inside the primary field of view are excluded)
+            moderate (all k modes inside horizon + buffer are excluded, but all baselines within a uv pixel are added coherently)
+            pessimistic (all k modes inside horizon + buffer are excluded, and all baselines are added incoherently)
+
+        buff : float (default=0.1)
+            The size of the additive buffer outside the horizon to exclude in the pessimistic and moderate models.
+
+        freq : float (default=0.135)
+            The center frequency of the observation in GHz. If you change from the default, be sure to use
+            a sensible power spectrum model from that redshift.  Note that many values in the code are calculated
+            relative to .150 GHz and are not affected by changing this value.
+
+        eor : string (default='')
+            The model epoch of reionization power spectrum.  The code is built to handle output power spectra from 21cmFAST.
+
+        ndays : float (default=180.0)
+            The total number of days observed. The default is 180, which is the maximum a particular R.A. can be observed
+            in one year if one only observes at night. The total observing time is ndays*n_per_day.
+
+        n_per_day : float (default=6.0)
+            The number of good observing hours per day. This corresponds to the size of a low-foreground region in right ascension
+            for a drift scanning instrument.  The total observing time is ndays*n_per_day.  Default is 6.
+            If simulating a tracked scan, n_per_day should be a multiple of the length of the track
+            (i.e. for two three-hour tracks per day, n_per_day should be 6).
+
+        bwidth : float (default=0.008)
+            Cosmological bandwidth in GHz.  Note this is not the total instrument bandwidth, but the redshift range that can be
+            considered co-eval.
+
+        nchan : int (default=82)
+            Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
+            100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
+
+        no_ps : bool (default=False)
+            Remove pure north/south baselines (u=0) from the sensitivity calculation. 
+            These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
         """
         #Load in data from array file; see mk_array_file.py for definitions of the parameters
         array = np.load(array_filename)
@@ -238,27 +237,27 @@ class Calc_Sense(PS_Funcs):
         dish_size_in_lambda = array['dish_size_in_lambda']
         Trx = array['Trx']
         t_int = array['t_int']
-        if self.model == 'pess':
+        if model == 'pess':
             uv_coverage = array['uv_coverage_pess']
         else:
             uv_coverage = array['uv_coverage']
 
         # Observations & Cosmology
         h = 0.7
-        B = self.bwidth
-        z = self.f2z(self.freq)
+        B = bwidth
+        z = self.f2z(freq)
 
-        dish_size_in_lambda = dish_size_in_lambda*(self.freq/.150) # linear frequency evolution, relative to 150 MHz
+        dish_size_in_lambda = dish_size_in_lambda*(freq/.150) # linear frequency evolution, relative to 150 MHz
         first_null = 1.22/dish_size_in_lambda #for an airy disk, even though beam model is Gaussian
         bm = 1.13*(2.35*(0.45/dish_size_in_lambda))**2
-        kpls = self.dk_deta(z) * np.fft.fftfreq(self.nchan,B/self.nchan)
+        kpls = self.dk_deta(z) * np.fft.fftfreq(nchan,B/nchan)
 
-        Tsky = 60e3 * (3e8/(self.freq*1e9))**2.55  # sky temperature in mK
-        n_lstbins = self.n_per_day*60./obs_duration
+        Tsky = 60e3 * (3e8/(freq*1e9))**2.55  # sky temperature in mK
+        n_lstbins = n_per_day*60./obs_duration
 
         # EOR Model
         #This is a dimensionless power spectrum, i.e., Delta^2
-        modelfile = self.eor
+        modelfile = eor
         model = np.loadtxt(modelfile)
         mk, mpk = model[:,0]/h, model[:,1] #k, Delta^2(k)
         #note that we're converting from Mpc to h/Mpc
@@ -279,7 +278,7 @@ class Calc_Sense(PS_Funcs):
         uv_coverage[SIZE/2,SIZE/2] = 0.
         uv_coverage[:,:SIZE/2] = 0.
         uv_coverage[SIZE/2:,SIZE/2] = 0.
-        if self.no_ns: uv_coverage[:,SIZE/2] = 0.
+        if no_ns: uv_coverage[:,SIZE/2] = 0.
 
         #loop over uv_coverage to calculate k_pr
         nonzero = np.where(uv_coverage > 0)
@@ -289,9 +288,9 @@ class Calc_Sense(PS_Funcs):
             kpr = umag * self.dk_du(z)
             kprs.append(kpr)
             #calculate horizon limit for baseline of length umag
-            if self.model in ['mod','pess']: hor = self.dk_deta(z) * umag/self.freq + self.buff
-            elif self.model in ['opt']: hor = self.dk_deta(z) * (umag/self.freq)*np.sin(first_null/2)
-            else: print '%s is not a valid foreground model; Aborting...' % self.model; sys.exit()
+            if model in ['mod','pess']: hor = self.dk_deta(z) * umag/freq + buff
+            elif model in ['opt']: hor = self.dk_deta(z) * (umag/freq)*np.sin(first_null/2)
+            else: print '%s is not a valid foreground model; Aborting...' % model; sys.exit()
             if not sense.has_key(kpr):
                 sense[kpr] = np.zeros_like(kpls)
                 Tsense[kpr] = np.zeros_like(kpls)
@@ -302,7 +301,7 @@ class Calc_Sense(PS_Funcs):
                 if k < min(mk): continue
                 #don't include values beyond the interpolation range (no sensitivity anyway)
                 if k > np.max(mk): continue
-                tot_integration = uv_coverage[iv,iu] * self.ndays
+                tot_integration = uv_coverage[iv,iu] * ndays
                 delta21 = p21(k)
                 Tsys = Tsky + Trx
                 bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
@@ -338,7 +337,7 @@ class Calc_Sense(PS_Funcs):
 
         #save results to output npz
         if out_fname is None:
-            out_fname = '%s_%s_%.3f.npz' % (name,self.model,self.freq)
+            out_fname = '%s_%s_%.3f.npz' % (name,model,freq)
 
         np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d)
         
@@ -357,12 +356,117 @@ class Calc_Sense(PS_Funcs):
         print 'total snr = ', amp/err
 
 
-    def calc_sense_2D(self):
+    def calc_sense_2D(self,array_filename, outdir='./', out_fname=None,
+                        freq=0.135, ndays=180.0, n_per_day=6.0, nchan=82, no_ns=False, **kwargs):
         """
+        Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
+
+        outdir : string (default='./')
+            output directory
+
+        out_fname : string (default=None)
+            output filename (out_fname.npz)
+
+        freq : float (default=0.135)
+            The center frequency of the observation in GHz. If you change from the default, be sure to use
+            a sensible power spectrum model from that redshift.  Note that many values in the code are calculated
+            relative to .150 GHz and are not affected by changing this value.
+
+        ndays : float (default=180.0)
+            The total number of days observed. The default is 180, which is the maximum a particular R.A. can be observed
+            in one year if one only observes at night. The total observing time is ndays*n_per_day.
+
+        n_per_day : float (default=6.0)
+            The number of good observing hours per day. This corresponds to the size of a low-foreground region in right ascension
+            for a drift scanning instrument.  The total observing time is ndays*n_per_day.  Default is 6.
+            If simulating a tracked scan, n_per_day should be a multiple of the length of the track
+            (i.e. for two three-hour tracks per day, n_per_day should be 6).
+
+        nchan : int (default=82)
+            Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
+            100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
+
+        no_ps : bool (default=False)
+            Remove pure north/south baselines (u=0) from the sensitivity calculation. 
+            These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
         """
-        pass
+        # Observational Cosmology
+        #Load in data from array file; see mk_array_file.py for definitions of the parameters
+        array = np.load(array_filename)
+        name = array['name']
+        obs_duration = array['obs_duration']
+        dish_size_in_lambda = array['dish_size_in_lambda']
+        Trx = array['Trx']
+        t_int = array['t_int']
+        uv_coverage = array['uv_coverage']
 
+        h = 0.7
+        B = .008 #largest bandwidth allowed by "cosmological evolution", i.e., the
+                #maximum line of sight volume over which the universe can be considered co-eval
+        z = self.f2z(freq)
 
+        dish_size_in_lambda = dish_size_in_lambda*(freq/.150) # linear frequency evolution, relative to 150 MHz
+        first_null = 1.22/dish_size_in_lambda #for an airy disk, even though beam model is Gaussian
+        bm = 1.13*(2.35*(0.45/dish_size_in_lambda))**2
+        kpls = dk_deta(z) * np.fft.fftfreq(nchan,B/nchan)
 
+        Tsky = 60e3 * (3e8/(freq*1e9))**2.55  # sky temperature in mK
+        n_lstbins = n_per_day*60./obs_duration
+
+        # Main Code
+        #set up blank arrays/dictionaries
+        Tsense = {}
+
+        uv_coverage *= t_int
+        SIZE = uv_coverage.shape[0]
+
+        # Cut unnecessary data out of uv coverage: auto-correlations & half of uv plane (which is not statistically independent for real sky)
+        uv_coverage[SIZE/2,SIZE/2] = 0.
+        uv_coverage[:,:SIZE/2] = 0.
+        uv_coverage[SIZE/2:,SIZE/2] = 0.
+        if no_ns: uv_coverage[:,SIZE/2] = 0.
+
+        #loop over uv_coverage to calculate k_pr
+        nonzero = np.where(uv_coverage > 0)
+        for iu,iv in zip(nonzero[1], nonzero[0]):
+            u, v = (iu - SIZE/2) * dish_size_in_lambda, (iv - SIZE/2) * dish_size_in_lambda
+            umag = np.sqrt(u**2 + v**2)
+            kpr = umag * self.dk_du(z)
+            if not Tsense.has_key(kpr):
+                Tsense[kpr] = np.zeros_like(kpls)
+            for i, kpl in enumerate(kpls):
+                k = np.sqrt(kpl**2 + kpr**2)
+                tot_integration = uv_coverage[iv,iu] * ndays
+                Tsys = Tsky + Trx
+                bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
+                bm_eff = bm**2 / bm2 # this can obviously be reduced; it isn't for clarity
+                scalar = self.X2Y(z) * bm_eff * B #* k**3 / (2*n.pi**2)
+                Trms = Tsys / np.sqrt(2*(B*1e9)*tot_integration)
+                #add errors in inverse quadrature
+                Tsense[kpr][i] += 1./(scalar*Trms**2)**2
+
+        #bin in annuli of k_perp
+        deltak_perp = self.dk_du(z) * dish_size_in_lambda #bin on beam scale 
+        kprs = np.arange(0,0.3,deltak_perp) #binning range
+        Tsense2d = np.zeros((len(kprs),len(kpls)))
+        cen = len(kpls)/2
+        for kpr in Tsense.keys():
+            ind = self.find_nearest(kprs,kpr)
+            Tsense2d[ind] += np.append(Tsense[kpr][cen:], Tsense[kpr][:cen])
+
+        kpls = np.append(kpls[cen:],kpls[:cen])
+        for ind, kpr in enumerate(kprs):
+            Tsense2d[ind] = Tsense2d[ind]**-.5 / np.sqrt(n_lstbins)
+
+        #fold over k-parallel
+        Tsense2d = Tsense2d[:,cen:][:,::-1]
+        Tsense2d[:,:-1] /= np.sqrt(2)
+        kpls = kpls[cen:]
+
+        #save results to output npz
+        if out_fname is None:
+            out_fname = '%s_%.3f_2dsense.npz' % (name,opts.freq)
+
+        np.savez(outdir+out_fname,kprs=kprs,kpls=kpls,T_errs=Tsense2d)
 
 
