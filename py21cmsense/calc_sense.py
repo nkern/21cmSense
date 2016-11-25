@@ -76,7 +76,8 @@ class Calc_Sense(PS_Funcs):
     Interferometer Sensitivity Calculator
     """
 
-    def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None, bl_min=0.0, bl_max=None, verbose=False, **kwargs):
+    def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None,
+                            bl_min=0.0, bl_max=None, verbose=False, **kwargs):
         """
         Make an array file given a calibration file
 
@@ -88,6 +89,20 @@ class Calc_Sense(PS_Funcs):
 
         out_fname : string (default=None)
             arrayfile output filename prefix (out_fname.npz)
+
+        track : float (default=None)
+            If set, calculate sensitivity for a tracked observation of this duration
+            in hours; otherwise, calculate for a drift scan.
+
+        bl_min : float (default=0.0)
+            Set the minimum baseline (in meters) to include in the uv plane.
+
+        bl_max : float (default=None)
+            Set the maximum baseline (in meters) to include in the uv plane.
+            Use to exclude outriggers with little EoR sensitivity to speed up calculation.
+
+        verbose : bool (default=False)
+            print out informational statements
         """
         #load cal file and read array parameters
         aa = a.cal.get_aa(cal_filename, np.array([.150]))
