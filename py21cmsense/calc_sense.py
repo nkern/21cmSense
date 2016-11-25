@@ -37,17 +37,17 @@ class PS_Funcs:
     # redshift z) into a tranverse k mode in h/Mpc at redshift z
     def dk_du(self, z):
         '''2pi * [h Mpc^-1] / [wavelengths], valid for u >> 1.'''
-        return 2*np.pi / dL_dth(z) # from du = 1/dth, which derives from du = d(sin(th)) using the small-angle approx
+        return 2*np.pi / self.dL_dth(z) # from du = 1/dth, which derives from du = d(sin(th)) using the small-angle approx
 
     #Multiply by this to convert eta (FT of freq.; in 1/GHz) to line of sight k mode in h/Mpc at redshift z
     def dk_deta(self, z):
         '''2pi * [h Mpc^-1] / [GHz^-1]'''
-        return 2*np.pi / dL_df(z)
+        return 2*np.pi / self.dL_df(z)
 
     #scalar conversion between observing and cosmological coordinates
     def X2Y(self, z):
         '''[h^-3 Mpc^3] / [str * GHz]'''
-        return dL_dth(z)**2 * dL_df(z)
+        return self.dL_dth(z)**2 * self.dL_df(z)
 
     #A function used for binning
     def find_nearest(self, array,value):
@@ -145,7 +145,8 @@ class Calc_Sense(PS_Funcs):
             name = prms['name']+'track_%.1fhr' % track
         else:
             obs_duration = prms['obs_duration']
-            name = prms['name']+'drift'; print name
+            name = prms['name']+'drift'
+            if verbose == True: print name
         dish_size_in_lambda = prms['dish_size_in_lambda']
 
         # Fiducial Observational Parameters
@@ -245,12 +246,12 @@ class Calc_Sense(PS_Funcs):
         # Observations & Cosmology
         h = 0.7
         B = self.bwidth
-        z = f2z(self.freq)
+        z = self.f2z(self.freq)
 
         dish_size_in_lambda = dish_size_in_lambda*(self.freq/.150) # linear frequency evolution, relative to 150 MHz
         first_null = 1.22/dish_size_in_lambda #for an airy disk, even though beam model is Gaussian
         bm = 1.13*(2.35*(0.45/dish_size_in_lambda))**2
-        kpls = dk_deta(z) * np.fft.fftfreq(self.nchan,B/self.nchan)
+        kpls = self.dk_deta(z) * np.fft.fftfreq(self.nchan,B/self.nchan)
 
         Tsky = 60e3 * (3e8/(self.freq*1e9))**2.55  # sky temperature in mK
         n_lstbins = self.n_per_day*60./obs_duration
@@ -285,11 +286,11 @@ class Calc_Sense(PS_Funcs):
         for iu,iv in zip(nonzero[1], nonzero[0]):
             u, v = (iu - SIZE/2) * dish_size_in_lambda, (iv - SIZE/2) * dish_size_in_lambda
             umag = np.sqrt(u**2 + v**2)
-            kpr = umag * dk_du(z)
+            kpr = umag * self.dk_du(z)
             kprs.append(kpr)
             #calculate horizon limit for baseline of length umag
-            if self.model in ['mod','pess']: hor = dk_deta(z) * umag/self.freq + self.buff
-            elif self.model in ['opt']: hor = dk_deta(z) * (umag/self.freq)*np.sin(first_null/2)
+            if self.model in ['mod','pess']: hor = self.dk_deta(z) * umag/self.freq + self.buff
+            elif self.model in ['opt']: hor = self.dk_deta(z) * (umag/self.freq)*np.sin(first_null/2)
             else: print '%s is not a valid foreground model; Aborting...' % self.model; sys.exit()
             if not sense.has_key(kpr):
                 sense[kpr] = np.zeros_like(kpls)
@@ -306,14 +307,14 @@ class Calc_Sense(PS_Funcs):
                 Tsys = Tsky + Trx
                 bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
                 bm_eff = bm**2 / bm2 # this can obviously be reduced; it isn't for clarity
-                scalar = X2Y(z) * bm_eff * B * k**3 / (2*np.pi**2)
+                scalar = self.X2Y(z) * bm_eff * B * k**3 / (2*np.pi**2)
                 Trms = Tsys / np.sqrt(2*(B*1e9)*tot_integration)
                 #add errors in inverse quadrature
                 sense[kpr][i] += 1./(scalar*Trms**2 + delta21)**2
                 Tsense[kpr][i] += 1./(scalar*Trms**2)**2
 
         #bin the result in 1D
-        delta = dk_deta(z)*(1./B) #default bin size is given by bandwidth
+        delta = self.dk_deta(z)*(1./B) #default bin size is given by bandwidth
         kmag = np.arange(delta,np.max(mk),delta)
 
         kprs = np.array(kprs)
@@ -327,8 +328,8 @@ class Calc_Sense(PS_Funcs):
                 k = np.sqrt(kpl**2 + kpr**2)
                 if k > np.max(mk): continue
                 #add errors in inverse quadrature for further binning
-                sense1d[find_nearest(kmag,k)] += 1./sense[kpr][i]**2
-                Tsense1d[find_nearest(kmag,k)] += 1./Tsense[kpr][i]**2
+                sense1d[self.find_nearest(kmag,k)] += 1./sense[kpr][i]**2
+                Tsense1d[self.find_nearest(kmag,k)] += 1./Tsense[kpr][i]**2
 
         #invert errors and take square root again for final answer
         for ind,kbin in enumerate(sense1d):
