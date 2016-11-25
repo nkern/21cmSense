@@ -333,8 +333,11 @@ class Calc_Sense(PS_Funcs):
             Tsense1d[ind] = Tsense1d[ind]**-.5
 
         #save results to output npz
-        n.savez('%s_%s_%.3f.npz' % (name,opts.model,opts.freq),ks=kmag,errs=sense1d,T_errs=Tsense1d)
+        if out_fname is None:
+            out_fname = '%s_%s_%.3f.npz' % (name,opts.model,opts.freq),ks=kmag,errs=sense1d,T_errs=Tsense1d)
 
+        np.savez(outdir+out_fname)
+        
         #calculate significance with least-squares fit of amplitude
         A = p21(kmag)
         M = p21(kmag)
