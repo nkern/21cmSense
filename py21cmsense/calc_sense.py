@@ -212,9 +212,12 @@ class Calc_Sense(PS_Funcs):
 
         quadsum = quadsum**.5
 
-        if verbose == True: print "Saving file as %s_blmin%0.f_blmax%0.f_arrayfile.npz" % (name, bl_len_min, bl_len_max)
+        if out_fname is None:
+            out_fname = '%s_blmin%0.f_blmax%0.f_arrayfile.npz' % (name, bl_len_min, bl_len_max)
 
-        np.savez('%s_blmin%0.f_blmax%0.f_arrayfile.npz' % (name, bl_len_min, bl_len_max),
+        if verbose == True: print "Saving file as "+out_fname
+
+        np.savez(outdir+out_fname,
             uv_coverage = uvsum,
             uv_coverage_pess = quadsum,
             name = name,
@@ -223,7 +226,7 @@ class Calc_Sense(PS_Funcs):
             Trx = prms['Trx'],
             t_int = t_int)
 
-    def calc_sense_1D(self, array_filename):
+    def calc_sense_1D(self, array_filename, outdir='./', out_fname=None):
         """
         Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
         """
@@ -334,9 +337,9 @@ class Calc_Sense(PS_Funcs):
 
         #save results to output npz
         if out_fname is None:
-            out_fname = '%s_%s_%.3f.npz' % (name,opts.model,opts.freq),ks=kmag,errs=sense1d,T_errs=Tsense1d)
+            out_fname = '%s_%s_%.3f.npz' % (name,self.model,self.freq)
 
-        np.savez(outdir+out_fname)
+        np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d)
         
         #calculate significance with least-squares fit of amplitude
         A = p21(kmag)
