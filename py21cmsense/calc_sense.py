@@ -3,8 +3,6 @@ calc_sense.py
 
 Repackaging of original calc_sense.py and calc_tsense_2D.py scripts into a class structure
 
-Nicholas Kern
-2016
 """
 from __future__ import division
 import os
