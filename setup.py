@@ -1,4 +1,7 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except:
+    from distutils.core import setup
 
 __version__ = '0.0.1'
 

@@ -371,7 +371,7 @@ class Calc_Sense(PS_Funcs):
     def calc_sense_2D(self,array_filename, outdir='./', out_fname=None,
                         freq=0.135, ndays=180.0, n_per_day=6.0, nchan=82, no_ns=False, **kwargs):
         """
-        Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
+        Calculates expected sensitivity of a 21cm experiment
 
         outdir : string (default='./')
             output directory
