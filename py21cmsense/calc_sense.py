@@ -270,8 +270,8 @@ class Calc_Sense(PS_Funcs):
         # EOR Model
         #This is a dimensionless power spectrum, i.e., Delta^2
         modelfile = eor
-        model = np.loadtxt(modelfile)
-        mk, mpk = model[:,0]/h, model[:,1] #k, Delta^2(k)
+        pspec = np.loadtxt(modelfile)
+        mk, mpk = pspec[:,0]/h, pspec[:,1] #k, Delta^2(k)
         #note that we're converting from Mpc to h/Mpc
 
         #interpolation function for the EoR model
