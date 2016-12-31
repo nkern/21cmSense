@@ -74,7 +74,7 @@ class Calc_Sense(PS_Funcs):
     """
 
     def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None,
-                            bl_min=0.0, bl_max=None, verbose=False, **kwargs):
+                            bl_min=0.0, bl_max=None, verbose=False):
         """
         Make an array file given a calibration file
 
@@ -194,7 +194,7 @@ class Calc_Sense(PS_Funcs):
 
     def calc_sense_1D(self, array_filename, outdir='./', out_fname=None,
                         model='mod', buff=0.1, freq=0.135, eor='', ndays=180.0, n_per_day=6.0,
-                        bwidth=0.008, nchan=82, no_ns=False, **kwargs):
+                        bwidth=0.008, nchan=82, no_ns=False):
         """
         Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
 
@@ -238,7 +238,7 @@ class Calc_Sense(PS_Funcs):
             Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
             100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
 
-        no_ps : bool (default=False)
+        no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
             These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
         """
@@ -398,7 +398,7 @@ class Calc_Sense(PS_Funcs):
             Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
             100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
 
-        no_ps : bool (default=False)
+        no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
             These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
         """
