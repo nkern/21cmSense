@@ -71,6 +71,11 @@ class PS_Funcs:
 class Calc_Sense(PS_Funcs):
     """
     Interferometer Sensitivity Calculator
+
+    Methods include:
+    make_arrayfile()
+    calc_sense_1D()
+    calc_sense_2D()
     """
 
     def make_arrayfile(self, cal_filename, outdir='./', out_fname=None, track=None,
@@ -78,6 +83,8 @@ class Calc_Sense(PS_Funcs):
         """
         Make an array file given a calibration file
 
+        Input:
+        ------
         cal_filename : string
             aipy Python calibration file location & name without '.py' suffix
 
@@ -100,6 +107,10 @@ class Calc_Sense(PS_Funcs):
 
         verbose : bool (default=False)
             print out informational statements
+
+        Output:
+        -------
+        None
         """
         #load cal file and read array parameters
         aa = a.cal.get_aa(cal_filename, np.array([.150]))
@@ -198,6 +209,8 @@ class Calc_Sense(PS_Funcs):
         """
         Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
 
+        Input:
+        ------
         outdir : string (default='./')
             output directory
 
@@ -241,6 +254,10 @@ class Calc_Sense(PS_Funcs):
         no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
             These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
+
+        Output:
+        -------
+        None
         """
         #Load in data from array file; see mk_array_file.py for definitions of the parameters
         array = np.load(array_filename)
@@ -373,6 +390,8 @@ class Calc_Sense(PS_Funcs):
         """
         Calculates expected sensitivity of a 21cm experiment
 
+        Input:
+        ------
         outdir : string (default='./')
             output directory
 
@@ -401,6 +420,10 @@ class Calc_Sense(PS_Funcs):
         no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
             These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
+
+        Output:
+        -------
+        None
         """
         # Observational Cosmology
         #Load in data from array file; see mk_array_file.py for definitions of the parameters
