@@ -55,5 +55,3 @@ no_ns           = False
 CS.calc_sense_1D(array_filename, outdir=out_direc, out_fname=out_filename,
                     model=model, buff=buff, freq=freq, eor=eor, ndays=ndays,
                     n_per_day=n_per_day, bwidth=bwidth, nchan=nchan, no_ns=no_ns)
-
-
