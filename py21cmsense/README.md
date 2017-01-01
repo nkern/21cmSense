@@ -18,15 +18,13 @@ and provide a link to the code repository.
 
 **py21cmsense** is dependent on 
 
-*aipy*
+*aipy*: https://github.com/AaronParsons/aipy
 <br>
-https://github.com/AaronParsons/aipy
-
 *numpy*
-
+<br>
 *scipy*
 
-To install, simply run the setup.py file
+To install, simply run the py21cmsense/setup.py file
 ```bash
 python setup.py install
 ```
