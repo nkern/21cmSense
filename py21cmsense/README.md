@@ -14,8 +14,6 @@ If you use this code in any of your work, please acknowledge
 Pober et al. 2013AJ....145...65P and Pober et al. 2014ApJ...782...66P 
 and provide a link to the code repository.
 
-### INSTALLATION:
-
 **py21cmsense** is dependent on 
 
 *aipy*: https://github.com/AaronParsons/aipy
@@ -23,9 +21,3 @@ and provide a link to the code repository.
 *numpy*
 <br>
 *scipy*
-
-To install, simply run the py21cmsense/setup.py file
-```bash
-python setup.py install
-```
-
