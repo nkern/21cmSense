@@ -1,9 +1,7 @@
 ### py21cmsense
 <br>
-py21cmsense is a Python module for calculating the sensitivity of a radio interferometer the 21cm power spectrum.
+py21cmsense is a Python module for calculating the thermal sensitivity of a radio interferometer to the 21cm power spectrum.
 For more information, please see
-
-Parsons et al. 2012ApJ...753...81P
 
 Pober et al. 2013AJ....145...65P
 
@@ -17,13 +15,17 @@ Pober et al. 2013AJ....145...65P and Pober et al. 2014ApJ...782...66P
 and provide a link to the code repository.
 
 INSTALLATION:
+*py21cmsense* is dependent on 
 
-Simple installation is to add the directory where py21cmsense lives to your PYTHONPATH.
-In your .bash_profile or .bashrc file, add
+aipy:
+https://github.com/AaronParsons/aipy
+
+numpy
+
+scipy
+
+To install, simply run the setup.py file
 ```bash
-#!/bin/bash 
-cd <working_directory>
-PYTHONPATH=<working_directory>:$PYTHONPATH
-export PYTHONPATH
+python setup.py install
 ```
 
