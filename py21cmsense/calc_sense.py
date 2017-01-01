@@ -211,6 +211,9 @@ class Calc_Sense(PS_Funcs):
 
         Input:
         ------
+        array_filename : string
+            input array file generated from make_arrayfile() and a calibration file
+
         outdir : string (default='./')
             output directory
 
