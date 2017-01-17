@@ -205,7 +205,7 @@ class Calc_Sense(PS_Funcs):
 
     def calc_sense_1D(self, array_filename, outdir='./', out_fname=None,
                         model='mod', buff=0.1, freq=0.135, eor='', ndays=180.0, n_per_day=6.0,
-                        bwidth=0.008, nchan=82, no_ns=False):
+                        bwidth=0.008, nchan=82, no_ns=False, verbose=False):
         """
         Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
 
@@ -385,7 +385,8 @@ class Calc_Sense(PS_Funcs):
         s2 = (len(wM)-1)**-1 * (dY.T * dY)
         X = np.matrix(wA).T * np.matrix(wA)
         err = np.sqrt((1./np.float(X)))
-        print 'total snr = ', amp/err
+        if verbose == True:
+            print 'total snr = ', amp/err
 
 
     def calc_sense_2D(self,array_filename, outdir='./', out_fname=None,
