@@ -374,7 +374,7 @@ class Calc_Sense(PS_Funcs):
         np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d)
         
         #calculate significance with least-squares fit of amplitude
-        if verbose == True
+        if verbose == True:
             A = p21(kmag)
             M = p21(kmag)
             wA, wM = A * (1./sense1d), M * (1./sense1d)
