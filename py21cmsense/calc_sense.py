@@ -2,7 +2,6 @@
 calc_sense.py
 
 Repackaging of original calc_sense.py and calc_tsense_2D.py scripts into a class structure
-
 """
 from __future__ import division
 import os
@@ -41,14 +40,14 @@ class PS_Funcs:
         return 2*np.pi / self.dL_dth(z) # from du = 1/dth, which derives from du = d(sin(th)) using the small-angle approx
 
     #Multiply by this to convert eta (FT of freq.; in 1/GHz) to line of sight k mode in h/Mpc at redshift z
-    def dk_deta(self, z):
+    def dk_deta(self, z, omega_m=0.266):
         '''2pi * [h Mpc^-1] / [GHz^-1]'''
-        return 2*np.pi / self.dL_df(z)
+        return 2*np.pi / self.dL_df(z, omega_m=omega_m)
 
     #scalar conversion between observing and cosmological coordinates
-    def X2Y(self, z):
+    def X2Y(self, z, omega_m=0.266):
         '''[h^-3 Mpc^3] / [str * GHz]'''
-        return self.dL_dth(z)**2 * self.dL_df(z)
+        return self.dL_dth(z)**2 * self.dL_df(z, omega_m=omega_m)
 
     #A function used for binning
     def find_nearest(self, array,value):
@@ -205,7 +204,7 @@ class Calc_Sense(PS_Funcs):
 
     def calc_sense_1D(self, array_filename, outdir='./', out_fname=None,
                         model='mod', buff=0.1, freq=0.135, eor='', ndays=180.0, n_per_day=6.0,
-                        bwidth=0.008, nchan=82, no_ns=False, verbose=False):
+                        bwidth=0.008, nchan=82, hlittle=0.7, omega_m=0.266, no_ns=False, verbose=False):
         """
         Calculates expected sensitivity of a 21cm experiment given a 21cm PS and an array file from make_arrayfile()
 
@@ -254,6 +253,12 @@ class Calc_Sense(PS_Funcs):
             Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
             100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
 
+        hlittle : float (default=0.7)
+            Hubble Constant, used for conversion of angles into length scales
+
+        omega_m : float (default=0.266)
+            Omega Matter, Matter Energy Density Fraction
+
         no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
             These baselines can potentially have higher systematics, so excluding them represents a conservative choice.
@@ -275,14 +280,14 @@ class Calc_Sense(PS_Funcs):
             uv_coverage = array['uv_coverage']
 
         # Observations & Cosmology
-        h = 0.7
+        h = hlittle
         B = bwidth
         z = self.f2z(freq)
 
         dish_size_in_lambda = dish_size_in_lambda*(freq/.150) # linear frequency evolution, relative to 150 MHz
         first_null = 1.22/dish_size_in_lambda #for an airy disk, even though beam model is Gaussian
         bm = 1.13*(2.35*(0.45/dish_size_in_lambda))**2
-        kpls = self.dk_deta(z) * np.fft.fftfreq(nchan,B/nchan)
+        kpls = self.dk_deta(z, omega_m=omega_m) * np.fft.fftfreq(nchan,B/nchan)
 
         Tsky = 60e3 * (3e8/(freq*1e9))**2.55  # sky temperature in mK
         n_lstbins = n_per_day*60./obs_duration
@@ -320,8 +325,8 @@ class Calc_Sense(PS_Funcs):
             kpr = umag * self.dk_du(z)
             kprs.append(kpr)
             #calculate horizon limit for baseline of length umag
-            if model in ['mod','pess']: hor = self.dk_deta(z) * umag/freq + buff
-            elif model in ['opt']: hor = self.dk_deta(z) * (umag/freq)*np.sin(first_null/2)
+            if model in ['mod','pess']: hor = self.dk_deta(z, omega_m=omega_m) * umag/freq + buff
+            elif model in ['opt']: hor = self.dk_deta(z, omega_m=omega_m) * (umag/freq)*np.sin(first_null/2)
             else: print '%s is not a valid foreground model; Aborting...' % model; sys.exit()
             if not sense.has_key(kpr):
                 sense[kpr] = np.zeros_like(kpls)
@@ -338,14 +343,14 @@ class Calc_Sense(PS_Funcs):
                 Tsys = Tsky + Trx
                 bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
                 bm_eff = bm**2 / bm2 # this can obviously be reduced; it isn't for clarity
-                scalar = self.X2Y(z) * bm_eff * B * k**3 / (2*np.pi**2)
+                scalar = self.X2Y(z, omega_m=omega_m) * bm_eff * B * k**3 / (2*np.pi**2)
                 Trms = Tsys / np.sqrt(2*(B*1e9)*tot_integration)
                 #add errors in inverse quadrature
                 sense[kpr][i] += 1./(scalar*Trms**2 + delta21)**2
                 Tsense[kpr][i] += 1./(scalar*Trms**2)**2
 
         #bin the result in 1D
-        delta = self.dk_deta(z)*(1./B) #default bin size is given by bandwidth
+        delta = self.dk_deta(z, omega_m=omega_m)*(1./B) #default bin size is given by bandwidth
         kmag = np.arange(delta,np.max(mk),delta)
 
         kprs = np.array(kprs)
@@ -390,7 +395,8 @@ class Calc_Sense(PS_Funcs):
 
 
     def calc_sense_2D(self,array_filename, outdir='./', out_fname=None,
-                        freq=0.135, ndays=180.0, n_per_day=6.0, nchan=82, no_ns=False, **kwargs):
+                        freq=0.135, ndays=180.0, n_per_day=6.0, nchan=82, hlittle=0.7, omega_m=0.266,
+                        no_ns=False, **kwargs):
         """
         Calculates expected sensitivity of a 21cm experiment
 
@@ -439,7 +445,7 @@ class Calc_Sense(PS_Funcs):
         t_int = array['t_int']
         uv_coverage = array['uv_coverage']
 
-        h = 0.7
+        h = hlittle
         B = .008 #largest bandwidth allowed by "cosmological evolution", i.e., the
                 #maximum line of sight volume over which the universe can be considered co-eval
         z = self.f2z(freq)
@@ -447,7 +453,7 @@ class Calc_Sense(PS_Funcs):
         dish_size_in_lambda = dish_size_in_lambda*(freq/.150) # linear frequency evolution, relative to 150 MHz
         first_null = 1.22/dish_size_in_lambda #for an airy disk, even though beam model is Gaussian
         bm = 1.13*(2.35*(0.45/dish_size_in_lambda))**2
-        kpls = dk_deta(z) * np.fft.fftfreq(nchan,B/nchan)
+        kpls = dk_deta(z, omega_m=omega_m) * np.fft.fftfreq(nchan,B/nchan)
 
         Tsky = 60e3 * (3e8/(freq*1e9))**2.55  # sky temperature in mK
         n_lstbins = n_per_day*60./obs_duration
@@ -479,7 +485,7 @@ class Calc_Sense(PS_Funcs):
                 Tsys = Tsky + Trx
                 bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
                 bm_eff = bm**2 / bm2 # this can obviously be reduced; it isn't for clarity
-                scalar = self.X2Y(z) * bm_eff * B #* k**3 / (2*n.pi**2)
+                scalar = self.X2Y(z, omega_m=omega_m) * bm_eff * B #* k**3 / (2*n.pi**2)
                 Trms = Tsys / np.sqrt(2*(B*1e9)*tot_integration)
                 #add errors in inverse quadrature
                 Tsense[kpr][i] += 1./(scalar*Trms**2)**2
