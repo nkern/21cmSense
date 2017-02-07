@@ -376,7 +376,12 @@ class Calc_Sense(PS_Funcs):
         if out_fname is None:
             out_fname = '%s_%s_%.3f.npz' % (name,model,freq)
 
-        np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d)
+        kwarg_keys = np.array(['model', 'buff', 'freq', 'eor', 'ndays', 'n_per_day',
+                'bwidth', 'nchan', 'hlittle', 'omega_m', 'no_ns'])
+        kwarg_keys = np.array([model, buff, freq, eor, ndays, n_per_day,
+                bwidth, nchan, hlittle, omega_m, no_ns])
+          
+        np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d,kwarg_keys=kwarg_keys,kwarg_vals=kwarg_vals)
         
         #calculate significance with least-squares fit of amplitude
         if verbose == True:
