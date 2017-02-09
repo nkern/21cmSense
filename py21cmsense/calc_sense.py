@@ -3,6 +3,7 @@ calc_sense.py
 
 Repackaging of original calc_sense.py and calc_tsense_2D.py scripts into a class structure
 """
+
 from __future__ import division
 import os
 import sys
@@ -257,7 +258,7 @@ class Calc_Sense(PS_Funcs):
             Hubble Constant, used for conversion of angles into length scales
 
         omega_m : float (default=0.266)
-            Omega Matter, Matter Energy Density Fraction
+            Omega Matter, matter energy density fraction
 
         no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
@@ -378,7 +379,7 @@ class Calc_Sense(PS_Funcs):
 
         kwarg_keys = np.array(['model', 'buff', 'freq', 'eor', 'ndays', 'n_per_day',
                 'bwidth', 'nchan', 'hlittle', 'omega_m', 'no_ns'])
-        kwarg_keys = np.array([model, buff, freq, eor, ndays, n_per_day,
+        kwarg_vals = np.array([model, buff, freq, eor, ndays, n_per_day,
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
         np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d,kwarg_keys=kwarg_keys,kwarg_vals=kwarg_vals)
@@ -431,6 +432,12 @@ class Calc_Sense(PS_Funcs):
         nchan : int (default=82)
             Integer number of channels across cosmological bandwidth. Defaults to 82, which is equivalent to 1024 channels over 
             100 MHz of bandwidth.  Sets maximum k_parallel that can be probed, but little to no overall effect on sensitivity.
+
+        hlittle : float (default=0.7)
+            Hubble Constant, used for conversion of angles into length scales
+
+        omega_m : float (default=0.266)
+            Omega Matter, matter energy density fraction
 
         no_ns : bool (default=False)
             Remove pure north/south baselines (u=0) from the sensitivity calculation. 
@@ -518,5 +525,4 @@ class Calc_Sense(PS_Funcs):
             out_fname = '%s_%.3f_2dsense.npz' % (name,opts.freq)
 
         np.savez(outdir+out_fname,kprs=kprs,kpls=kpls,T_errs=Tsense2d)
-
 

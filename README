@@ -30,7 +30,7 @@ which excludes the u = 0 column of the uv plane; this effectively removes north/
 ===========================================================================
 
 Py21cmSense
-A python utility package designed to complement 21cmSense.
+A python utility package designed to complement 21cmSense, and is a Python wrapper for the calc_sense.py script with a class structure.
 
 Installation Instruction:
 
