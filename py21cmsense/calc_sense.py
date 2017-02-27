@@ -382,7 +382,8 @@ class Calc_Sense(PS_Funcs):
         kwarg_vals = np.array([model, buff, freq, eor, ndays, n_per_day,
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
-        np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d,kwarg_keys=kwarg_keys,kwarg_vals=kwarg_vals)
+        np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d,kwarg_keys=kwarg_keys,kwarg_vals=kwarg_vals,
+                 sense=sense, Tsense=Tsense, n_lstbins=n_lstbins, kpls=kpls )
         
         #calculate significance with least-squares fit of amplitude
         if verbose == True:
