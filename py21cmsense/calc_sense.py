@@ -308,6 +308,8 @@ class Calc_Sense(PS_Funcs):
         kprs = []
         #sense will include sample variance, Tsense will be Thermal only
         sense, Tsense = {}, {}
+        # k_horizon array
+        k_hor = []
 
         uv_coverage *= t_int
         SIZE = uv_coverage.shape[0]
@@ -329,6 +331,7 @@ class Calc_Sense(PS_Funcs):
             if model in ['mod','pess']: hor = self.dk_deta(z, omega_m=omega_m) * umag/freq + buff
             elif model in ['opt']: hor = self.dk_deta(z, omega_m=omega_m) * (umag/freq)*np.sin(first_null/2)
             else: print '%s is not a valid foreground model; Aborting...' % model; sys.exit()
+            k_hor.append(hor)
             if not sense.has_key(kpr):
                 sense[kpr] = np.zeros_like(kpls)
                 Tsense[kpr] = np.zeros_like(kpls)
@@ -383,7 +386,7 @@ class Calc_Sense(PS_Funcs):
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
         np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d,kwarg_keys=kwarg_keys,kwarg_vals=kwarg_vals,
-                 sense=sense, Tsense=Tsense, n_lstbins=n_lstbins, kpls=kpls )
+                 sense=sense, Tsense=Tsense, n_lstbins=n_lstbins, kpls=kpls, k_hor=k_hor )
         
         #calculate significance with least-squares fit of amplitude
         if verbose == True:
