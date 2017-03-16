@@ -307,7 +307,7 @@ class Calc_Sense(PS_Funcs):
         #set up blank arrays/dictionaries
         kprs = []
         #sense will include sample variance, Tsense will be Thermal only
-        sense, Tsense = {}, {}
+        sense, Tsense = [], []
         Delta21 = []
         # k_horizon array
         k_hor = []
@@ -321,7 +321,7 @@ class Calc_Sense(PS_Funcs):
         uv_coverage[SIZE/2:,SIZE/2] = 0.
         if no_ns: uv_coverage[:,SIZE/2] = 0.
 
-        #loop over uv_coverage to calculate k_pr
+        #loop over uv_coverage to calculate k_pr (k_perp)
         nonzero = np.where(uv_coverage > 0)
         for iu,iv in zip(nonzero[1], nonzero[0]):
             u, v = (iu - SIZE/2) * dish_size_in_lambda, (iv - SIZE/2) * dish_size_in_lambda
@@ -333,9 +333,10 @@ class Calc_Sense(PS_Funcs):
             elif model in ['opt']: hor = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle) * (umag/freq)*np.sin(first_null/2)
             else: print '%s is not a valid foreground model; Aborting...' % model; sys.exit()
             k_hor.append(hor)
-            if not sense.has_key(kpr):
-                sense[kpr] = np.zeros_like(kpls)
-                Tsense[kpr] = np.zeros_like(kpls)
+            #loop over k_parallel with temporaray arrays
+            Delta21_temp = np.zeros(len(kpls))
+            Tsense_temp = np.zeros(len(kpls))
+            sense_temp = np.zeros(len(kpls))
             for i, kpl in enumerate(kpls):
                 #exclude k_parallel modes contaminated by foregrounds
                 if np.abs(kpl) < hor: continue
@@ -345,38 +346,48 @@ class Calc_Sense(PS_Funcs):
                 if k > np.max(mk): continue
                 tot_integration = uv_coverage[iv,iu] * ndays
                 delta21 = p21(k)
-                Delta21.append(delta21)
                 Tsys = Tsky + Trx
                 bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
                 bm_eff = bm**2 / bm2 # this can obviously be reduced; it isn't for clarity
                 scalar = self.X2Y(z, omega_m=omega_m, hlittle=hlittle) * bm_eff * B * k**3 / (2*np.pi**2)
                 Trms = Tsys / np.sqrt(2*(B*1e9)*tot_integration)
-                #add errors in inverse quadrature
-                sense[kpr][i] += 1./(scalar*Trms**2 + delta21)**2
-                Tsense[kpr][i] += 1./(scalar*Trms**2)**2
+                # append errors to arrays
+                Delta21_temp[i] = delta21
+                Tsense_temp[i] = (scalar*Trms**2 + delta21)**(-2.0)
+                sense_temp[i] = (scalar*Trms**2)**(-2.0)
+
+            # append to master arrays
+            Delta21.append(Delta21_temp)
+            Tsense.append(Tsense_temp)
+            sense.append(sense_temp)
+
+        # transform into arrays
+        Delta21 = np.array(Delta21)
+        Tsense = np.array(Tsense)
+        sense = np.array(sense)
 
         #bin the result in 1D
-        delta = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle)*(1./B) #default bin size is given by bandwidth
-        kmag = np.arange(delta,np.max(mk),delta)
+        # delta = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle)*(1./B) #default bin size is given by bandwidth
+        # kmag = np.arange(delta,np.max(mk),delta)
 
-        kprs = np.array(kprs)
-        sense1d = np.zeros_like(kmag)
-        Tsense1d = np.zeros_like(kmag)
-        for ind, kpr in enumerate(sense.keys()):
-            #errors were added in inverse quadrature, now need to invert and take square root to have error bars; also divide errors by number of indep. fields
-            sense[kpr] = sense[kpr]**-.5 / np.sqrt(n_lstbins)
-            Tsense[kpr] = Tsense[kpr]**-.5 / np.sqrt(n_lstbins)
-            for i, kpl in enumerate(kpls):
-                k = np.sqrt(kpl**2 + kpr**2)
-                if k > np.max(mk): continue
-                #add errors in inverse quadrature for further binning
-                sense1d[self.find_nearest(kmag,k)] += 1./sense[kpr][i]**2
-                Tsense1d[self.find_nearest(kmag,k)] += 1./Tsense[kpr][i]**2
+        # kprs = np.array(kprs)
+        # sense1d = np.zeros_like(kmag)
+        # Tsense1d = np.zeros_like(kmag)
+        # for ind, kpr in enumerate(kprs):
+        #     #errors were added in inverse quadrature, now need to invert and take square root to have error bars; also divide errors by number of indep. fields
+        #     sense[kpr] = sense[kpr]**-.5 / np.sqrt(n_lstbins)
+        #     Tsense[kpr] = Tsense[kpr]**-.5 / np.sqrt(n_lstbins)
+        #     for i, kpl in enumerate(kpls):
+        #         k = np.sqrt(kpl**2 + kpr**2)
+        #         if k > np.max(mk): continue
+        #         #add errors in inverse quadrature for further binning
+        #         sense1d[self.find_nearest(kmag,k)] += 1./sense[kpr][i]**2
+        #         Tsense1d[self.find_nearest(kmag,k)] += 1./Tsense[kpr][i]**2
 
-        #invert errors and take square root again for final answer
-        for ind,kbin in enumerate(sense1d):
-            sense1d[ind] = kbin**-.5
-            Tsense1d[ind] = Tsense1d[ind]**-.5
+        # #invert errors and take square root again for final answer
+        # for ind,kbin in enumerate(sense1d):
+        #     sense1d[ind] = kbin**-.5
+        #     Tsense1d[ind] = Tsense1d[ind]**-.5
 
         #save results to output npz
         if out_fname is None:
