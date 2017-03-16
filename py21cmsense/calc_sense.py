@@ -308,6 +308,7 @@ class Calc_Sense(PS_Funcs):
         kprs = []
         #sense will include sample variance, Tsense will be Thermal only
         sense, Tsense = {}, {}
+        Delta21 = []
         # k_horizon array
         k_hor = []
 
@@ -344,6 +345,7 @@ class Calc_Sense(PS_Funcs):
                 if k > np.max(mk): continue
                 tot_integration = uv_coverage[iv,iu] * ndays
                 delta21 = p21(k)
+                Delta21.append(delta21)
                 Tsys = Tsky + Trx
                 bm2 = bm/2. #beam^2 term calculated for Gaussian; see Parsons et al. 2014
                 bm_eff = bm**2 / bm2 # this can obviously be reduced; it isn't for clarity
@@ -386,7 +388,7 @@ class Calc_Sense(PS_Funcs):
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
         np.savez(outdir+out_fname,ks=kmag,errs=sense1d,T_errs=Tsense1d,kwarg_keys=kwarg_keys,kwarg_vals=kwarg_vals,
-                 sense=sense, Tsense=Tsense, n_lstbins=n_lstbins, kpls=kpls, k_hor=k_hor )
+                 sense=sense, Tsense=Tsense, n_lstbins=n_lstbins, kpls=kpls, k_hor=k_hor, Delta21=Delta21 )
         
         #calculate significance with least-squares fit of amplitude
         if verbose == True:
