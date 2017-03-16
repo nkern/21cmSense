@@ -333,7 +333,7 @@ class Calc_Sense(PS_Funcs):
             elif model in ['opt']: hor = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle) * (umag/freq)*np.sin(first_null/2)
             else: print '%s is not a valid foreground model; Aborting...' % model; sys.exit()
             k_hor.append(hor)
-            #loop over k_parallel with temporaray arrays
+            #loop over k_parallel with temporary arrays
             Delta21_temp = np.zeros(len(kpls))
             Tsense_temp = np.zeros(len(kpls))
             sense_temp = np.zeros(len(kpls))
@@ -353,8 +353,8 @@ class Calc_Sense(PS_Funcs):
                 Trms = Tsys / np.sqrt(2*(B*1e9)*tot_integration)
                 # append errors to arrays
                 Delta21_temp[i] = delta21
-                sense_temp[i] = (scalar*Trms**2 + delta21)**(-2.0)
-                Tsense_temp[i] = (scalar*Trms**2)**(-2.0)
+                sense_temp[i] = (scalar*Trms**2 + delta21)
+                Tsense_temp[i] = (scalar*Trms**2)
 
             # append to master arrays
             Delta21.append(Delta21_temp)
@@ -368,29 +368,46 @@ class Calc_Sense(PS_Funcs):
         kprs = np.array(kprs)
         kmag = np.sqrt(kprs[:,np.newaxis]**2 + kpls[np.newaxis,:]**2)
 
+        # Break arrays into identical k_perp
+        sort = np.argsort(kprs)
+        break_kprs = []
+        unique_kprs = []
+        for i in range(len(kprs)):
+            if np.sum(np.isclose(unique_kprs, kprs[sort][i])) == 0:
+                unique_kprs.append(kprs[sort][i])
+        unique_kprs = np.array(unique_kprs)
+
+        for i in range(len(unique_kprs)):
+            break_kprs.append(np.where(np.isclose(kprs, unique_kprs[i])==True)[0])
+
+        # Rearrange arrays
+        Delta21 = np.array(map(lambda x: Delta21[x], break_kprs))
+        Tsense = np.array(map(lambda x: Tsense[x], break_kprs))
+        sense = np.array(map(lambda x: sense[x], break_kprs))
+        kprs = np.array(map(lambda x: kprs[x], break_kprs))
+        kmag = np.array(map(lambda x: kmag[x], break_kprs))
 
         #bin the result in 1D
-        # delta = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle)*(1./B) #default bin size is given by bandwidth
-        # kmag = np.arange(delta,np.max(mk),delta)
+        k_delta = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle)*(1./B) #default bin size is given by bandwidth
+        kmag1d = np.arange(k_delta,np.max(mk),k_delta)
 
-        # kprs = np.array(kprs)
-        # sense1d = np.zeros_like(kmag)
-        # Tsense1d = np.zeros_like(kmag)
-        # for ind, kpr in enumerate(kprs):
-        #     #errors were added in inverse quadrature, now need to invert and take square root to have error bars; also divide errors by number of indep. fields
-        #     sense[kpr] = sense[kpr]**-.5 / np.sqrt(n_lstbins)
-        #     Tsense[kpr] = Tsense[kpr]**-.5 / np.sqrt(n_lstbins)
-        #     for i, kpl in enumerate(kpls):
-        #         k = np.sqrt(kpl**2 + kpr**2)
-        #         if k > np.max(mk): continue
-        #         #add errors in inverse quadrature for further binning
-        #         sense1d[self.find_nearest(kmag,k)] += 1./sense[kpr][i]**2
-        #         Tsense1d[self.find_nearest(kmag,k)] += 1./Tsense[kpr][i]**2
+        sense1d = np.zeros_like(kmags1d)
+        Tsense1d = np.zeros_like(kmags1d)
+        for ind, kpr in enumerate(kprs):
+            #errors were added in inverse quadrature, now need to invert and take square root to have error bars; also divide errors by number of indep. fields
+            sense[kpr] = sense[kpr]**-.5 / np.sqrt(n_lstbins)
+            Tsense[kpr] = Tsense[kpr]**-.5 / np.sqrt(n_lstbins)
+            for i, kpl in enumerate(kpls):
+                k = np.sqrt(kpl**2 + kpr**2)
+                if k > np.max(mk): continue
+                #add errors in inverse quadrature for further binning
+                sense1d[self.find_nearest(kmag1d,k)] += 1./sense[kpr][i]**2
+                Tsense1d[self.find_nearest(kmag1d,k)] += 1./Tsense[kpr][i]**2
 
-        # #invert errors and take square root again for final answer
-        # for ind,kbin in enumerate(sense1d):
-        #     sense1d[ind] = kbin**-.5
-        #     Tsense1d[ind] = Tsense1d[ind]**-.5
+        # invert errors and take square root again for final answer
+        for ind,kbin in enumerate(sense1d):
+            sense1d[ind] = kbin**-.5
+            Tsense1d[ind] = Tsense1d[ind]**-.5
 
         #save results to output npz
         if out_fname is None:
@@ -401,7 +418,7 @@ class Calc_Sense(PS_Funcs):
         kwarg_vals = np.array([model, buff, freq, eor, ndays, n_per_day,
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
-        np.savez(outdir+out_fname, kmag=kmag, kwarg_keys=kwarg_keys,
+        np.savez(outdir+out_fname, kmag=kmag, kmag1d=kmag1d, kwarg_keys=kwarg_keys,
                 kwarg_vals=kwarg_vals, sense=sense, Tsense=Tsense, n_lstbins=n_lstbins,
                 kpls=kpls, kprs=kprs, k_hor=k_hor, Delta21=Delta21)
         
