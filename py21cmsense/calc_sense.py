@@ -391,8 +391,8 @@ class Calc_Sense(PS_Funcs):
         k_delta = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle)*(1./B) #default bin size is given by bandwidth
         kmag1d = np.arange(k_delta,np.max(mk),k_delta)
 
-        sense1d = np.zeros_like(kmag1d)
-        Tsense1d = np.zeros_like(kmag1d)
+        sense1d = np.zeros_like(kmags1d)
+        Tsense1d = np.zeros_like(kmags1d)
         for ind, kpr in enumerate(kprs):
             #errors were added in inverse quadrature, now need to invert and take square root to have error bars; also divide errors by number of indep. fields
             sense[kpr] = sense[kpr]**-.5 / np.sqrt(n_lstbins)
