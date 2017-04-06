@@ -366,7 +366,7 @@ class Calc_Sense(PS_Funcs):
         Tsense = np.array(Tsense)
         sense = np.array(sense)
         kprs = np.array(kprs)
-        kmag = np.sqrt(kprs[:,np.newaxis]**2 + kpls[np.newaxis,:]**2)
+        kmag = np.sqrt(kprs[:,np.newaxis]**2 + kprs[np.newaxis,:]**2)
 
 
         #bin the result in 1D
@@ -401,7 +401,7 @@ class Calc_Sense(PS_Funcs):
         kwarg_vals = np.array([model, buff, freq, eor, ndays, n_per_day,
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
-        np.savez(outdir+out_fname, kmag=kmag, kwarg_keys=kwarg_keys,
+        np.savez(outdir+out_fname, ks=kmag, kwarg_keys=kwarg_keys,
                 kwarg_vals=kwarg_vals, sense=sense, Tsense=Tsense, n_lstbins=n_lstbins,
                 kpls=kpls, kprs=kprs, k_hor=k_hor, Delta21=Delta21)
         
