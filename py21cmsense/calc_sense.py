@@ -365,9 +365,6 @@ class Calc_Sense(PS_Funcs):
         Delta21 = np.array(Delta21)
         Tsense = np.array(Tsense)
         sense = np.array(sense)
-        kprs = np.array(kprs)
-        kmag = np.sqrt(kprs[:,np.newaxis]**2 + kprs[np.newaxis,:]**2)
-
 
         #bin the result in 1D
         # delta = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle)*(1./B) #default bin size is given by bandwidth
@@ -401,7 +398,7 @@ class Calc_Sense(PS_Funcs):
         kwarg_vals = np.array([model, buff, freq, eor, ndays, n_per_day,
                 bwidth, nchan, hlittle, omega_m, no_ns])
           
-        np.savez(outdir+out_fname, ks=kmag, kwarg_keys=kwarg_keys,
+        np.savez(outdir+out_fname, ks=kmag, errs=sense1d, T_errs=Tsense1d, kwarg_keys=kwarg_keys,
                 kwarg_vals=kwarg_vals, sense=sense, Tsense=Tsense, n_lstbins=n_lstbins,
                 kpls=kpls, kprs=kprs, k_hor=k_hor, Delta21=Delta21)
         
