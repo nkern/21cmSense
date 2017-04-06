@@ -354,7 +354,7 @@ class Calc_Sense(PS_Funcs):
                 # append errors to arrays
                 Delta21_temp[i] = delta21
                 sense_temp[i] = (scalar*Trms**2 + delta21)**(-2.0)
-                Tsense_temp[i] = (scalar*Trms**2)**(-2.0)
+                Tense_temp[i] = (scalar*Trms**2)**(-2.0)
 
             # append to master arrays
             Delta21.append(Delta21_temp)
