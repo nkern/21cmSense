@@ -168,7 +168,7 @@ class Calc_Sense(PS_Funcs):
             if verbose == True: print 'The longest baseline being included is %.2f m' % (bl_len_max*(a.const.c/(fq*1e11)))
             
         #grid each baseline type into uv plane
-        dim = np.round(bl_len_max/dish_size_in_lambda)*2 + 1 # round to nearest odd
+        dim = int(np.round(bl_len_max/dish_size_in_lambda)*2) + 1 # round to nearest odd
         uvsum,quadsum = np.zeros((dim,dim)), np.zeros((dim,dim)) #quadsum adds all non-instantaneously-redundant baselines incoherently
         for cnt, uvbin in enumerate(uvbins):
             if verbose == True: print 'working on %i of %i uvbins' % (cnt+1, len(uvbins))
