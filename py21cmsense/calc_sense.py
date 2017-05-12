@@ -65,7 +65,7 @@ class PS_Funcs:
         if round(ycen) > size - 1 or round(xcen) > size - 1 or ycen < 0. or xcen <0.:
             return beam
         else:
-            beam[round(ycen),round(xcen)] = 1. #single pixel gridder
+            beam[int(round(ycen)),int(round(xcen))] = 1. #single pixel gridder
             return beam
 
 class Calc_Sense(PS_Funcs):
