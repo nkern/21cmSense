@@ -472,7 +472,7 @@ class Calc_Sense(PS_Funcs):
         dish_size_in_lambda = dish_size_in_lambda*(freq/.150) # linear frequency evolution, relative to 150 MHz
         first_null = 1.22/dish_size_in_lambda #for an airy disk, even though beam model is Gaussian
         bm = 1.13*(2.35*(0.45/dish_size_in_lambda))**2
-        kpls = dk_deta(z, omega_m=omega_m, hlittle=hlittle) * np.fft.fftfreq(nchan,B/nchan)
+        kpls = self.dk_deta(z, omega_m=omega_m, hlittle=hlittle) * np.fft.fftfreq(nchan,B/nchan)
 
         Tsky = 60e3 * (3e8/(freq*1e9))**2.55  # sky temperature in mK
         n_lstbins = n_per_day*60./obs_duration
@@ -485,10 +485,10 @@ class Calc_Sense(PS_Funcs):
         SIZE = uv_coverage.shape[0]
 
         # Cut unnecessary data out of uv coverage: auto-correlations & half of uv plane (which is not statistically independent for real sky)
-        uv_coverage[SIZE/2,SIZE/2] = 0.
-        uv_coverage[:,:SIZE/2] = 0.
-        uv_coverage[SIZE/2:,SIZE/2] = 0.
-        if no_ns: uv_coverage[:,SIZE/2] = 0.
+        uv_coverage[SIZE//2,SIZE//2] = 0.
+        uv_coverage[:,:SIZE//2] = 0.
+        uv_coverage[SIZE//2:,SIZE//2] = 0.
+        if no_ns: uv_coverage[:,SIZE//2] = 0.
 
         #loop over uv_coverage to calculate k_pr
         nonzero = np.where(uv_coverage > 0)
