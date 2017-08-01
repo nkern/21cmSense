@@ -316,10 +316,11 @@ class Calc_Sense(PS_Funcs):
         SIZE = uv_coverage.shape[0]
 
         # Cut unnecessary data out of uv coverage: auto-correlations & half of uv plane (which is not statistically independent for real sky)
-        uv_coverage[SIZE/2,SIZE/2] = 0.
-        uv_coverage[:,:SIZE/2] = 0.
-        uv_coverage[SIZE/2:,SIZE/2] = 0.
-        if no_ns: uv_coverage[:,SIZE/2] = 0.
+        # ensure it is an int
+        uv_coverage[SIZE//2,SIZE//2] = 0.
+        uv_coverage[:,:SIZE//2] = 0.
+        uv_coverage[SIZE//2:,SIZE//2] = 0.
+        if no_ns: uv_coverage[:,SIZE//2] = 0.
 
         #loop over uv_coverage to calculate k_pr
         nonzero = np.where(uv_coverage > 0)
